@@ -1,0 +1,48 @@
+services:
+  couchdb:
+    image: couchdb:3.3
+    container_name: task-manager-couchdb
+    env_file:
+      - .env
+    environment:
+      COUCHDB_USER: ${COUCHDB_USER}
+      COUCHDB_PASSWORD: ${COUCHDB_PASSWORD}
+      TZ: ${TZ}
+    ports:
+      - "${COUCHDB_HOST_PORT}:5984"
+    volumes:
+      - couchdb-data:/opt/couchdb/data
+      - ./couchdb-config:/opt/couchdb/etc/local.d
+    networks:
+      - task-network
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: task-manager-backend-couchdb
+    env_file:
+      - .env
+    environment:
+      PYTHONUNBUFFERED: "1"
+      COUCHDB_HOST: ${COUCHDB_HOST}
+      COUCHDB_PORT: ${COUCHDB_PORT}
+      COUCHDB_DB: ${COUCHDB_DB}
+      COUCHDB_USER: ${COUCHDB_USER}
+      COUCHDB_PASSWORD: ${COUCHDB_PASSWORD}
+      TZ: ${TZ}
+    ports:
+      - "${BACKEND_HOST_PORT}:8000"
+    networks:
+      - task-network
+    restart: unless-stopped
+    depends_on:
+      - couchdb
+
+networks:
+  task-network:
+    driver: bridge
+
+volumes:
+  couchdb-data:

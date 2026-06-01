@@ -1,0 +1,32 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: task-manager-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./db:/db
+    environment:
+      - PYTHONUNBUFFERED=1
+      - TZ=Europe/Moscow
+    networks:
+      - task-network
+    restart: unless-stopped
+
+  sqlite-web:
+    image: ghcr.io/coleifer/sqlite-web:latest
+    container_name: task-manager-sqlite-web
+    command: data.sqlite --host 0.0.0.0 --port 8080
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./db:/data
+    networks:
+      - task-network
+    restart: unless-stopped
+
+networks:
+  task-network:
+    driver: bridge

@@ -1,0 +1,4 @@
+mysql-data/
+couchdb-data/
+.DS_Store
+.env
